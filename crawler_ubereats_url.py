@@ -48,7 +48,6 @@ for store_url in stores:
     time.sleep(1)
     count+=1
     print(f"====第{count}間====")
-    print(ws)
     ws.append([restaurant_url])
     wb.save("Uber_eats高雄市餐廳網址.xlsx")
 

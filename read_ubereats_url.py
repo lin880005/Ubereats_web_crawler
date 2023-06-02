@@ -32,53 +32,74 @@ time.sleep(3)
 wb = openpyxl.Workbook()
 ws = wb.active
 
-wb2 = openpyxl.Workbook()
-ws2 = wb2.active
+
 
 ws["A1"] = "餐廳名稱"
 ws["B1"] = "餐廳類型"
 ws["C1"] = "餐廳總評分"
-ws["D1"] = "經度"
-ws["E1"] = "緯度"
+ws["D1"] = "地址"
+ws["E1"] = "經度"
+ws["F1"] = "緯度"
+ws["G1"] = "訂餐網址"
 
-ws2["A1"] = "URL"
 
 df = pd.read_excel('Uber_eats台北市餐廳網址.xlsx')
 
 # 提取網址欄位的數據
 urls = df['URL']
 
+count = 0
 
-detailList=[]
 for store in urls:
     driver.get(store)
     time.sleep(3)
-    try:
-        detail = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[text()="詳細資訊"]'))
-        )
-        detail.click()
-    except:
-        ws2.append([store]) #有error店家網址
-        print(store)
-        pass
-    time.sleep(5)
-    
-    soup = BeautifulSoup(driver.page_source, "html.parser")
-    #print(soup)
+    try:         # 👈👀 正常接單的店家，可直接點選到 "詳細資訊"，走try 📌
 
-    info = soup.find_all("main", id="main-content")[0].script.text
-    dic_info = json.loads(info)
-    #print(info)
-    name = dic_info["name"]  # 店名
-    type = dic_info["servesCuisine"][0]  # 類型
-    sc = dic_info["aggregateRating"]["ratingValue"]  # 總評分
-    #ad = dic_info["address"]["streetAddress"]
-    lo = dic_info["geo"]["longitude"]#經度
-    la = dic_info["geo"]["latitude"]#緯度
-  
-    print("=================")
-    ws.append([data_clean(name),type,sc,lo,la])
-    wb2.save("Uber_eats高雄市沒開店家網址")
+        detail = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="詳細資訊"]')))
+        detail.click()
+        time.sleep(5)
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        #print(soup)
+
+        info = soup.find_all("main", id="main-content")[0].script.text
+        dic_info = json.loads(info)
+        #print(info)
+        name = dic_info["name"]  # 店名
+        type = dic_info["servesCuisine"][0]  # 類型
+        sc = dic_info["aggregateRating"]["ratingValue"]  # 總評分
+        # ad = dic_info["address"]["streetAddress"]                       # 👈👀 先不要抓地址 📌
+        lo = dic_info["geo"]["longitude"]#經度
+        la = dic_info["geo"]["latitude"]#緯度
+        count+=1
+        print(f"====第{count}間====")
+
+    except:       # 👈👀 已不接單的店家，有彈出視窗導致無法直接點選到 "詳細資訊"，走except 📌
+
+        closeButton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[aria-label="關閉"]')))
+        closeButton.click()
+        
+        # ☝👀 多一個步驟，要先把彈出的視窗關閉 📌
+        # 👇👀 後面一大坨就跟前面的try一樣，點選 "詳細資訊" 抓店家資料 📌
+        
+        detail = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="詳細資訊"]')))
+        detail.click()
+        time.sleep(5)
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        #print(soup)
+
+        info = soup.find_all("main", id="main-content")[0].script.text
+        dic_info = json.loads(info)
+        #print(info)
+        name = dic_info["name"]  # 店名
+        type = dic_info["servesCuisine"][0]  # 類型
+        sc = dic_info["aggregateRating"]["ratingValue"]  # 總評分
+        # ad = dic_info["address"]["streetAddress"]                       # 👈👀 先不要抓地址 📌
+        lo = dic_info["geo"]["longitude"]#經度
+        la = dic_info["geo"]["latitude"]#緯度
+        count+=1
+        print(f"====第{count}間====")
+ 
+
+    ws.append([data_clean(name),type,sc,"",lo,la, store])
     wb.save("Uber_eats高雄市.xlsx")
 driver.quit()
