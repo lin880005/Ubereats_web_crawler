@@ -3,9 +3,7 @@ from selenium.webdriver.common.by import By # 選取器
 from selenium.webdriver.support.wait import WebDriverWait # 網站等待
 from selenium.webdriver.support import expected_conditions as EC # 元素狀態判斷
 from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
 import time
-import json
 import openpyxl
 import re
 
@@ -23,7 +21,7 @@ driver.get("https://www.ubereats.com/tw")
 
 # 在首頁輸入地址
 getblock = driver.find_element(By.XPATH, '//*[@placeholder="輸入外送地址"]')
-getblock.send_keys('台北市')
+getblock.send_keys('高雄市')
 time.sleep(1)
 getblock.send_keys('\ue007') # 按下Enter
 time.sleep(3)
@@ -52,7 +50,7 @@ for store_url in stores:
     print(f"====第{count}間====")
     print(ws)
     ws.append([restaurant_url])
-    wb.save("Uber_eats台北市餐廳網址.xlsx")
+    wb.save("Uber_eats高雄市餐廳網址.xlsx")
 
 driver.quit()
 time.sleep(1000)
