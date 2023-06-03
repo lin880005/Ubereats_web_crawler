@@ -23,7 +23,7 @@ driver = webdriver.Chrome(chrome_options = options)
 driver.get("https://www.ubereats.com/tw")
 
 getblock = driver.find_element(By.XPATH, '//*[@placeholder="輸入外送地址"]')
-getblock.send_keys('台北市')
+getblock.send_keys('高雄市')
 time.sleep(1)
 getblock.send_keys('\ue007') # 按下Enter
 time.sleep(3)
@@ -43,7 +43,7 @@ ws["F1"] = "緯度"
 ws["G1"] = "訂餐網址"
 
 
-df = pd.read_excel('Uber_eats台北市餐廳網址.xlsx')
+df = pd.read_excel('Uber_eats高雄市餐廳網址.xlsx')
 
 # 提取網址欄位的數據
 urls = df['URL']
@@ -65,11 +65,19 @@ for store in urls:
         dic_info = json.loads(info)
         #print(info)
         name = dic_info["name"]  # 店名
-        type = dic_info["servesCuisine"][0]  # 類型
-        sc = dic_info["aggregateRating"]["ratingValue"]  # 總評分
-        # ad = dic_info["address"]["streetAddress"]                       # 👈👀 先不要抓地址 📌
-        lo = dic_info["geo"]["longitude"]#經度
-        la = dic_info["geo"]["latitude"]#緯度
+        
+        try:
+            sc = dic_info["aggregateRating"]["ratingValue"]  # 總評分
+            ad = dic_info["address"]["streetAddress"]                       # 👈👀 先不要抓地址 📌
+            type = dic_info["servesCuisine"][0]  # 類型
+            lo = dic_info["geo"]["longitude"]#經度
+            la = dic_info["geo"]["latitude"]#緯度
+        except:
+            sc = "NoRating"
+            ad = ""
+            type = ""
+            lo = "" #經度
+            la = "" #緯度
         count+=1
         print(f"====第{count}間====")
 
@@ -91,15 +99,23 @@ for store in urls:
         dic_info = json.loads(info)
         #print(info)
         name = dic_info["name"]  # 店名
-        type = dic_info["servesCuisine"][0]  # 類型
-        sc = dic_info["aggregateRating"]["ratingValue"]  # 總評分
-        # ad = dic_info["address"]["streetAddress"]                       # 👈👀 先不要抓地址 📌
-        lo = dic_info["geo"]["longitude"]#經度
-        la = dic_info["geo"]["latitude"]#緯度
+        
+        try:
+            sc = dic_info["aggregateRating"]["ratingValue"]  # 總評分
+            ad = dic_info["address"]["streetAddress"]    # 👈👀 先不要抓地址 📌
+            type = dic_info["servesCuisine"][0]  # 類型
+            lo = dic_info["geo"]["longitude"]#經度
+            la = dic_info["geo"]["latitude"]#緯度                   
+        except:
+            sc = "NoRating"
+            ad = ""
+            type = ""
+            lo = "" #經度
+            la = "" #緯度
         count+=1
         print(f"====第{count}間====")
  
 
-    ws.append([data_clean(name),type,sc,"",lo,la, store])
+    ws.append([data_clean(name),type,sc,ad,lo,la, store])
     wb.save("Uber_eats高雄市.xlsx")
 driver.quit()

@@ -52,5 +52,5 @@ for store_url in stores:
     wb.save("Uber_eats高雄市餐廳網址.xlsx")
 
 driver.quit()
-time.sleep(1000)
+
 
